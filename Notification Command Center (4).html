@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notification Command Center Â· SoulSensei</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink: #1E1B29;
+  --ink-soft: #4B4560;
+  --paper: #F6F4F1;
+  --paper-raised: #FFFFFF;
+  --line: #E4E0D8;
+  --line-strong: #D2CCC0;
+  --accent: #3F6355;
+  --accent-soft: #E7EEE8;
+  --accent-deep: #294439;
+  --gold: #B8912E;
+  --gold-soft: #F5EDD8;
+  --wa: #2E9E56;
+  --wa-soft: #E5F4EA;
+  --em: #3E5C9A;
+  --em-soft: #E9EDF6;
+  --pu: #C97A3D;
+  --pu-soft: #FBEDE1;
+  --danger: #B4482F;
+  --danger-soft: #F7E7E2;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(30,27,41,0.04), 0 8px 24px -12px rgba(30,27,41,0.18);
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+::selection{ background: var(--accent-soft); color: var(--accent-deep); }
+
+button{font-family:inherit;}
+input,select{font-family:inherit;}
+
+/* ============ APP SHELL ============ */
+.app{
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  min-height:100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  background: var(--ink);
+  color: #EFEDF5;
+  padding: 28px 18px;
+  display:flex;
+  flex-direction:column;
+  position: sticky;
+  top:0;
+  height:100vh;
+}
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-bottom: 34px;
+  padding: 0 8px;
+}
+.brand-mark{
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight:600;
+  letter-spacing: 0.2px;
+  color: #FFFFFF;
+}
+.brand-sub{
+  font-size: 11px;
+  color: #A9A3BE;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nav-group{ margin-bottom: 22px; }
+.nav-label{
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #7A7391;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  text-align:left;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #D6D2E3;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor:pointer;
+  transition: background .12s ease, color .12s ease;
+}
+.nav-item:hover{ background: rgba(255,255,255,0.06); color:#fff; }
+.nav-item.active{ background: var(--accent); color:#fff; }
+.nav-dot{
+  width:6px; height:6px; border-radius:50%;
+  background: currentColor; opacity:.55; flex-shrink:0;
+}
+.nav-item.active .nav-dot{ opacity: 1; }
+.nav-count{
+  margin-left:auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #ADA7C2;
+  background: rgba(255,255,255,0.08);
+  padding: 1px 6px;
+  border-radius: 20px;
+}
+.nav-item.active .nav-count{ background: rgba(255,255,255,0.22); color:#fff;}
+
+.sidebar-foot{
+  margin-top:auto;
+  padding: 12px 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.09);
+  font-size: 11.5px;
+  color: #8C86A3;
+  line-height:1.5;
+}
+
+/* ---------- MAIN ---------- */
+.main{ padding: 30px 40px 80px; max-width: 1400px; }
+.view{ display:none; }
+.view.active{ display:block; animation: fadeIn .18s ease; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap: 24px;
+  margin-bottom: 26px;
+  flex-wrap:wrap;
+}
+.page-title{
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+.page-desc{
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  max-width: 560px;
+  margin:0;
+}
+
+/* ---------- SEARCH BAR ---------- */
+.searchbar-wrap{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--paper);
+  padding: 0 0 16px;
+  margin-bottom: 4px;
+}
+.searchbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+}
+.searchbar svg{ flex-shrink:0; color: var(--ink-soft); }
+.searchbar input{
+  flex:1;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.searchbar input::placeholder{ color:#A29CB5; }
+.searchbar .kbd{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+.search-clear{
+  border:none;background:var(--paper);color:var(--ink-soft);
+  width:22px;height:22px;border-radius:50%;cursor:pointer;
+  display:none; align-items:center;justify-content:center; font-size:13px;
+}
+
+/* ---------- FILTERS ---------- */
+.filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-group{ position:relative; }
+.filter-btn{
+  display:flex; align-items:center; gap:6px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 7px 12px 7px 13px;
+  font-size: 12.5px;
+  font-weight:500;
+  color: var(--ink-soft);
+  cursor:pointer;
+  transition: border-color .12s ease, color .12s ease;
+}
+.filter-btn:hover{ border-color: var(--accent); color: var(--ink); }
+.filter-btn.has-selection{ border-color: var(--accent); color: var(--accent-deep); background: var(--accent-soft); }
+.filter-btn .chip-count{
+  background: var(--accent); color:#fff; font-family:var(--font-mono);
+  font-size:10px; padding:1px 5px; border-radius:20px;
+}
+.filter-panel{
+  display:none;
+  position:absolute; top: calc(100% + 6px); left:0;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 10px;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y:auto;
+  z-index: 30;
+}
+.filter-panel.open{ display:block; }
+.filter-opt{
+  display:flex; align-items:center; gap:8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor:pointer;
+  color: var(--ink);
+}
+.filter-opt:hover{ background: var(--paper); }
+.filter-opt input{ accent-color: var(--accent); }
+.filter-clear-all{
+  border:none; background:none; color: var(--ink-soft);
+  font-size: 12.5px; text-decoration: underline; cursor:pointer;
+  padding: 6px 4px;
+}
+.filter-clear-all:hover{ color: var(--danger); }
+
+/* ---- Journey multi-select filters (reuses the .filter-* language) ---- */
+.jfilter-btn{ max-width: 260px; }
+.jfilter-btn .jf-text{
+  display:inline-block;
+  max-width: 210px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  vertical-align:bottom;
+}
+.jfilter-btn[disabled]{ opacity:.5; cursor:not-allowed; }
+.jfilter-btn[disabled]:hover{ border-color: var(--line-strong); color: var(--ink-soft); }
+.filter-panel-actions{
+  display:flex;
+  gap:6px;
+  padding: 2px 2px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.filter-mini{
+  flex:1;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-raised);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.filter-mini:hover{ border-color: var(--accent); color: var(--accent-deep); }
+.filter-empty{
+  font-size: 12.5px;
+  color: #B7B2C4;
+  font-style: italic;
+  padding: 6px 8px;
+}
+
+.active-filter-summary{
+  font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px;
+}
+.active-filter-summary strong{ color: var(--ink); font-weight:600; }
+
+/* ---------- OVERVIEW METRICS ---------- */
+.metric-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 34px;
+}
+.metric-card{
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+}
+.metric-value{
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight:600;
+  line-height:1;
+  color: var(--ink);
+}
+.metric-label{
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  font-weight:500;
+}
+.metric-card.wa .metric-value{ color: var(--wa); }
+.metric-card.em .metric-value{ color: var(--em); }
+.metric-card.pu .metric-value{ color: var(--pu); }
+.metric-card.accent .metric-value{ color: var(--accent); }
+
+.section-title{
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+.section-title .tag{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight:500;
+  color: var(--ink-soft);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform:none;
+}
+
+.overview-grid{
+  display:grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.panel{
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.breakdown-row{
+  display:flex; align-items:center; gap:12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.breakdown-row:last-child{ border-bottom:none; }
+.breakdown-row .name{ flex:1; color: var(--ink); font-weight:500; }
+.breakdown-row .bar-track{
+  width:110px; height:6px; background:var(--paper); border-radius:4px; overflow:hidden;
+}
+.breakdown-row .bar-fill{ height:100%; background: var(--accent); border-radius:4px; }
+.breakdown-row .count{ font-family: var(--font-mono); font-size:12px; color: var(--ink-soft); width:22px; text-align:right; }
+
+/* ---------- LIBRARY GRID ---------- */
+.result-count{
+  font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px;
+}
+.card-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.notif-card{
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
+  cursor:pointer;
+  transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+  display:flex; flex-direction:column; gap:10px;
+}
+.notif-card:hover{
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.notif-card.incomplete{ opacity: 0.72; border-style: dashed; }
+.notif-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.notif-usecase{ font-family: var(--font-display); font-size: 16.5px; font-weight:600; color: var(--ink); line-height:1.25; }
+.notif-id{ font-family: var(--font-mono); font-size: 10px; color:#AFA9C0; white-space:nowrap; margin-top:3px;}
+.notif-meta{ display:flex; flex-wrap:wrap; gap:6px; }
+.pill{
+  font-size: 11px; font-weight:600; padding: 3px 9px; border-radius: 999px;
+  display:inline-flex; align-items:center; gap:4px;
+}
+.pill-session{ background: var(--gold-soft); color:#8A6A17; }
+.pill-timing{ background: var(--accent-soft); color: var(--accent-deep); font-family: var(--font-mono); font-weight:500; }
+.pill-flag{ background: var(--danger-soft); color: var(--danger); }
+.channel-row{ display:flex; gap:6px; margin-top:2px; }
+.chan-badge{
+  font-size: 10.5px; font-weight:700; letter-spacing:.02em;
+  padding: 4px 8px; border-radius: 6px;
+  display:flex; align-items:center; gap:4px;
+}
+.chan-badge.on.wa{ background: var(--wa-soft); color: var(--wa); }
+.chan-badge.on.em{ background: var(--em-soft); color: var(--em); }
+.chan-badge.on.pu{ background: var(--pu-soft); color: var(--pu); }
+.chan-badge.off{ background: var(--paper); color:#B7B2C4; }
+.chan-dot{ width:6px;height:6px;border-radius:50%; background:currentColor; }
+
+.empty-state{
+  padding: 60px 20px;
+  text-align:center;
+  color: var(--ink-soft);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+.empty-state .big{ font-family:var(--font-display); font-size:19px; color:var(--ink); margin-bottom:6px; }
+
+/* ---------- DETAIL DRAWER ---------- */
+.overlay{
+  position:fixed; inset:0; background: rgba(20,17,28,0.42);
+  opacity:0; pointer-events:none; transition: opacity .18s ease;
+  z-index: 90;
+}
+.overlay.open{ opacity:1; pointer-events:auto; }
+.drawer{
+  position:fixed; top:0; right:0; height:100vh;
+  width: 560px; max-width: 92vw;
+  background: var(--paper-raised);
+  box-shadow: -12px 0 40px rgba(20,17,28,0.18);
+  transform: translateX(100%);
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
+  z-index: 100;
+  display:flex; flex-direction:column;
+}
+.drawer.open{ transform: translateX(0); }
+.drawer-head{
+  padding: 22px 26px 16px;
+  border-bottom: 1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+}
+.drawer-close{
+  border:none; background: var(--paper); color: var(--ink-soft);
+  width:30px;height:30px;border-radius:50%; cursor:pointer; font-size:15px;
+  display:flex;align-items:center;justify-content:center; flex-shrink:0;
+}
+.drawer-close:hover{ background: var(--line); color: var(--ink); }
+.drawer-eyebrow{ font-family: var(--font-mono); font-size:10.5px; color: var(--ink-soft); margin-bottom:6px; letter-spacing:.04em; }
+.drawer-title{ font-family: var(--font-display); font-size:22px; font-weight:600; color: var(--ink); line-height:1.2; }
+.drawer-body{ padding: 20px 26px 40px; overflow-y:auto; flex:1; }
+
+.meta-table{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-bottom: 24px; }
+.meta-item{ font-size:13px; }
+.meta-item .k{ color: var(--ink-soft); font-size:11px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+.meta-item .v{ color: var(--ink); font-weight:500; }
+.meta-item .v.muted{ color:#B7B2C4; font-weight:400; font-style:italic; }
+
+.channel-block{
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow:hidden;
+}
+.channel-block-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.channel-block.wa .channel-block-head{ background: var(--wa-soft); }
+.channel-block.em .channel-block-head{ background: var(--em-soft); }
+.channel-block.pu .channel-block-head{ background: var(--pu-soft); }
+.channel-block-head .chname{ font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:7px; }
+.channel-block.wa .chname{ color: var(--wa); }
+.channel-block.em .chname{ color: var(--em); }
+.channel-block.pu .chname{ color: var(--pu); }
+.tmpl-id{
+  font-family: var(--font-mono); font-size:11px; color: var(--ink-soft);
+  background: rgba(255,255,255,0.6); border:1px solid rgba(0,0,0,0.06);
+  padding: 2px 8px; border-radius:5px;
+}
+.channel-block-body{ padding: 14px 16px 16px; }
+.copy-text{
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 12px 14px;
+  max-height: 260px;
+  overflow-y:auto;
+  border: 1px solid var(--line);
+  font-family: var(--font-body);
+}
+.copy-link{
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+.copy-link:hover{ color: var(--accent-deep); }
+.not-used-text{ font-size:13px; color:#B7B2C4; font-style:italic; padding: 4px 2px; }
+.copy-btn{
+  margin-top:10px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size:12px; font-weight:600;
+  padding: 7px 13px;
+  border-radius: 7px;
+  cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+  transition: background .12s ease, border-color .12s;
+}
+.copy-btn:hover{ border-color: var(--accent); color: var(--accent-deep); }
+.copy-btn.copied{ background: var(--accent); color:#fff; border-color: var(--accent); }
+
+.dataflag{
+  margin-top: 4px;
+  font-size: 12px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  padding: 8px 12px;
+  border-radius: 8px;
+  display:flex; gap:8px; align-items:flex-start;
+}
+
+/* ---------- JOURNEY VIEW ---------- */
+.journey-controls{
+  display:flex; gap:10px; margin-bottom: 26px; flex-wrap:wrap;
+}
+.journey-select{
+  border: 1px solid var(--line-strong);
+  background: var(--paper-raised);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  min-width: 200px;
+}
+
+/* ---- Phase sections ---- */
+.phase-block{ margin-bottom: 40px; }
+.phase-head{
+  display:flex; align-items:center; gap:12px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid currentColor;
+}
+.phase-head .phase-icon{
+  width: 34px; height:34px; border-radius: 9px;
+  display:flex; align-items:center; justify-content:center;
+  background: currentColor;
+  flex-shrink:0;
+}
+.phase-head .phase-icon svg{ color: var(--paper-raised); }
+.phase-head .phase-titles{ display:flex; flex-direction:column; gap:2px; }
+.phase-head .phase-name{
+  font-family: var(--font-display);
+  font-size: 19px; font-weight:600; color: var(--ink); line-height:1.1;
+}
+.phase-head .phase-sub{ font-size:12px; color: var(--ink-soft); }
+.phase-head .phase-count{
+  margin-left:auto;
+  font-family: var(--font-mono); font-size:11px;
+  color: currentColor;
+  padding: 3px 10px; border-radius: 20px; font-weight:600;
+}
+.phase-block.phase-pre{ color: var(--em); }
+.phase-block.phase-pre .phase-count{ background: var(--em-soft); }
+.phase-block.phase-live{ color: var(--gold); }
+.phase-block.phase-live .phase-count{ background: var(--gold-soft); }
+.phase-block.phase-post{ color: var(--accent); }
+.phase-block.phase-post .phase-count{ background: var(--accent-soft); }
+.phase-block.phase-unspecified{ color: #9C96AE; }
+.phase-block.phase-unspecified .phase-count{ background: #EFEDF3; }
+
+.journey-track{
+  position:relative;
+  padding-left: 34px;
+}
+.journey-track::before{
+  content:'';
+  position:absolute; left: 10px; top: 6px; bottom: 6px; width: 2px;
+  background: currentColor;
+  opacity: .55;
+  border-radius:2px;
+}
+.phase-block.phase-unspecified .journey-track::before{ background: var(--line-strong); opacity:1; }
+.journey-step{ position:relative; margin-bottom: 22px; }
+.journey-step:last-child{ margin-bottom:0; }
+.journey-step::before{
+  content:'';
+  position:absolute; left: -34px; top: 4px;
+  width: 12px; height:12px; border-radius:50%;
+  background: var(--paper-raised);
+  border: 3px solid currentColor;
+}
+.journey-step-label{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  font-weight:600;
+  margin-bottom: 8px;
+  letter-spacing:.03em;
+  text-transform: uppercase;
+}
+.journey-step-label .rel-time{ color: var(--ink-soft); font-weight:500; text-transform:none; margin-left:6px; }
+.journey-cards{ display:flex; flex-direction:column; gap:8px; }
+.journey-card{
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  transition: border-color .12s ease;
+}
+.journey-card:hover{ border-color: var(--accent); }
+.journey-card .jc-title{ font-weight:600; font-size:13.5px; color: var(--ink); }
+.journey-card .jc-sub{ font-size:11.5px; color: var(--ink-soft); margin-top:2px; }
+
+/* ---------- TEMPLATES VIEW ---------- */
+.tmpl-table-wrap{
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+table.tmpl-table{ width:100%; border-collapse:collapse; }
+table.tmpl-table th{
+  text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+  color: var(--ink-soft); padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+table.tmpl-table td{
+  padding: 13px 16px; border-bottom: 1px solid var(--line); font-size:13px; vertical-align: top;
+}
+table.tmpl-table tr:last-child td{ border-bottom:none; }
+table.tmpl-table tr{ cursor:pointer; }
+table.tmpl-table tr:hover td{ background: var(--paper); }
+.tmpl-id-cell{ font-family: var(--font-mono); font-size:12px; }
+.tmpl-id-cell.na{ color:#C3BED0; font-style:italic; }
+
+/* ---------- SYNC STATUS BAR ---------- */
+#sync-bar{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 7px 8px 7px 14px;
+  box-shadow: var(--shadow);
+  color: var(--ink-soft);
+  max-width: min(90vw, 430px);
+}
+#sync-dot{
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--line-strong);
+  flex-shrink: 0;
+}
+#sync-dot.pulsing{ animation: syncPulse 1s ease-in-out infinite; }
+@keyframes syncPulse{ 0%,100%{ opacity: 1; } 50%{ opacity: .3; } }
+#sync-text{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#sync-refresh{
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .12s ease, color .12s ease;
+}
+#sync-refresh:hover:not(:disabled){ border-color: var(--accent); color: var(--accent-deep); }
+#sync-refresh:disabled{ opacity: .55; cursor: default; }
+@media (max-width: 900px){
+  #sync-bar{ right: 10px; bottom: 10px; left: 10px; max-width: none; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-thumb{ background: var(--line-strong); border-radius: 6px; }
+::-webkit-scrollbar-track{ background: transparent; }
+
+/* Responsive */
+@media (max-width: 900px){
+  .app{ grid-template-columns: 1fr; }
+  .sidebar{ position:static; height:auto; flex-direction:row; overflow-x:auto; padding: 14px; gap: 10px;}
+  .brand{ display:none; }
+  .nav-group{ display:flex; gap:6px; margin:0; }
+  .nav-label{ display:none; }
+  .sidebar-foot{ display:none; }
+  .main{ padding: 20px 16px 60px; }
+  .overview-grid{ grid-template-columns: 1fr; }
+  .drawer{ width:100%; max-width:100%; }
+  .meta-table{ grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">Notification<br>Command Center</div>
+      <div class="brand-sub">SoulSensei Â· Source of truth</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" data-view="overview"><span class="nav-dot"></span>Overview</button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Library</div>
+      <button class="nav-item" data-view="library"><span class="nav-dot"></span>All Notifications<span class="nav-count" id="count-all">0</span></button>
+      <button class="nav-item" data-view="whatsapp"><span class="nav-dot"></span>WhatsApp<span class="nav-count" id="count-wa">0</span></button>
+      <button class="nav-item" data-view="email"><span class="nav-dot"></span>Email<span class="nav-count" id="count-em">0</span></button>
+      <button class="nav-item" data-view="push"><span class="nav-dot"></span>Push<span class="nav-count" id="count-pu">0</span></button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Structure</div>
+      <button class="nav-item" data-view="journey"><span class="nav-dot"></span>Journey View</button>
+      <button class="nav-item" data-view="templates"><span class="nav-dot"></span>Templates</button>
+    </div>
+
+    <div class="sidebar-foot">
+      Source: All_notification_Tracker.xlsx<br>
+      Whatsapp + Push sheets Â· 32 notifications mapped
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="view active" id="view-overview">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Overview</h1>
+          <p class="page-desc">A live snapshot of every notification currently tracked across WhatsApp and Push â calculated directly from the tracker. (This version of the tracker has no Email sheet.)</p>
+        </div>
+      </div>
+
+      <div class="metric-grid" id="metric-grid"></div>
+
+      <div class="overview-grid">
+        <div class="panel">
+          <div class="section-title">Notifications by session type</div>
+          <div id="breakdown-session"></div>
+        </div>
+        <div class="panel">
+          <div class="section-title">Notifications by use case</div>
+          <div id="breakdown-usecase"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIBRARY (shared for all/wa/em/pu) ============ -->
+    <section class="view" id="view-library">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title" id="library-title">Notification Library</h1>
+          <p class="page-desc" id="library-desc">Search and filter every tracked notification. Click a card to view the exact copy and template details.</p>
+        </div>
+      </div>
+
+      <div class="searchbar-wrap">
+        <div class="searchbar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" placeholder="Search use case, session type, timing, copy, template IDâ¦">
+          <button class="search-clear" id="search-clear">â</button>
+        </div>
+      </div>
+
+      <div class="filters" id="filters-row"></div>
+      <div class="active-filter-summary" id="active-summary"></div>
+
+      <div class="result-count" id="result-count"></div>
+      <div class="card-grid" id="card-grid"></div>
+    </section>
+
+    <!-- ============ JOURNEY ============ -->
+    <section class="view" id="view-journey">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Journey View</h1>
+        </div>
+      </div>
+
+      <div class="filters" id="journey-filters-row"></div>
+
+      <div id="journey-phases"></div>
+    </section>
+
+    <!-- ============ TEMPLATES ============ -->
+    <section class="view" id="view-templates">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Template Library</h1>
+          <p class="page-desc">Every notification mapped to its channel Template IDs, pulled directly from the tracker's Template ID columns.</p>
+        </div>
+      </div>
+
+      <div class="searchbar-wrap">
+        <div class="searchbar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="tmpl-search-input" placeholder="Search template ID, use case, session typeâ¦">
+        </div>
+      </div>
+
+      <div class="tmpl-table-wrap">
+        <table class="tmpl-table">
+          <thead>
+            <tr>
+              <th>Use Case</th>
+              <th>Session Type</th>
+              <th>WhatsApp Template ID</th>
+              <th>Email Template ID</th>
+              <th>Push Template ID</th>
+            </tr>
+          </thead>
+          <tbody id="tmpl-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- DETAIL DRAWER -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-eyebrow" id="drawer-eyebrow">RECORD</div>
+      <div class="drawer-title" id="drawer-title">â</div>
+    </div>
+    <button class="drawer-close" id="drawer-close">â</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+// ================= DATA (live from the Google Sheet) =================
+// This file stores NO notification data. It reads the Google Sheet through its
+// Visualization API (gviz) as JSONP — one request per tab ("Whatsapp" and
+// "Push") — and derives the exact record shape the rest of this file expects.
+// JSONP is used (not fetch) so it works even when this file is opened directly
+// from disk (file://), with no server and no CORS setup.
+//
+// Freshness:
+//  - Every page load fetches the sheet fresh.
+//  - It also auto-polls every 60s and on tab-refocus, plus a "Refresh Data"
+//    button, so edits appear without a manual reload.
+//  - Each request gets a unique URL (reqId + cachebust), so the browser / any
+//    proxy can never serve a stale copy. The only remaining delay is Google's
+//    own gviz cache on their servers (usually a few seconds, occasionally 1-2
+//    min) — the auto-poll absorbs that.
+//
+// Edits, added rows, deleted rows and renamed/reordered columns are all
+// reflected (columns are matched by header text).
+//
+// Sheet: https://docs.google.com/spreadsheets/d/1GYHmDvcmmg-AOP7UA6X_twLPNNkKiiFemQSZvcsf2ps/edit
+const SHEET_ID = '1GYHmDvcmmg-AOP7UA6X_twLPNNkKiiFemQSZvcsf2ps';
+const SHEET_TABS = { whatsapp: 'Whatsapp', push: 'Push' };
+function gvizUrl(tabName, cb) {
+  // A fresh nonce on every call -> unique URL -> no browser/proxy cache hit,
+  // and reqId also discourages gviz from returning a cached result.
+  const nonce = Date.now().toString(36) + Math.floor(Math.random() * 1e9).toString(36);
+  return 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq'
+    + '?tqx=reqId:' + nonce + ';responseHandler:' + cb + ';out:json'
+    + '&headers=1&sheet=' + encodeURIComponent(tabName)
+    + '&cachebust=' + nonce;
+}
+
+// Filled in by syncNow() before the first render. Kept as a const array whose
+// contents are replaced in place so every closure below keeps its reference.
+const RAW = [];
+
+// channel meta
+const CHANNELS = [
+  { key: 'whatsapp', short: 'wa', label: 'WhatsApp' },
+  { key: 'email', short: 'em', label: 'Email' },
+  { key: 'push', short: 'pu', label: 'Push' },
+];
+
+// ================= STATE =================
+const state = {
+  view: 'overview',
+  search: '',
+  channelScope: null, // 'whatsapp' | 'email' | 'push' | null (all)
+  filters: {
+    sessionType: new Set(),
+    useCase: new Set(),
+    timing: new Set(),
+    channel: new Set(),
+    phase: new Set(),
+  },
+};
+
+// ================= HELPERS =================
+function uniqueSorted(values) {
+  return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+}
+
+function allSessionTypes() {
+  return uniqueSorted(RAW.flatMap(r => r.sessionTypes));
+}
+function allUseCases() {
+  return uniqueSorted(RAW.flatMap(r => r.useCases));
+}
+function allTimings() {
+  return uniqueSorted(RAW.flatMap(r => r.timings));
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+// Escape the copy, then make the URL-formatted links that are already in the
+// message clickable. Two shapes are matched, in order, in a single pass:
+//   1. explicit scheme URLs   https://drive.google.com/…  http://…
+//   2. bare "domain + /path" URLs written without a scheme
+//      e.g.  soulsensei.in/one-on-one/listing/t/maa-kaali   (a "/path" is
+//      required, so ordinary sentence text with a full stop never matches)
+// Everything else is left exactly as written — email addresses, phone numbers,
+// and template placeholders such as {{ APP LINK CTA}}. Copy buttons still work
+// because .innerText returns the link's visible text (identical to the URL).
+const LINKIFY_RE = /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]}'"])|((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|net|org|in|io|co|app|gle|link|page|dev|me)\/[^\s<]*[^\s<.,;:!?)\]}'"])/gi;
+function linkify(str) {
+  return escapeHtml(str).replace(LINKIFY_RE, (m, schemeUrl, bareUrl) => {
+    if (schemeUrl) {
+      return `<a href="${schemeUrl}" target="_blank" rel="noopener noreferrer" class="copy-link">${schemeUrl}</a>`;
+    }
+    return `<a href="https://${bareUrl}" target="_blank" rel="noopener noreferrer" class="copy-link">${bareUrl}</a>`;
+  });
+}
+
+// Some source cells in the tracker carry an embedded (whole-cell) hyperlink in
+// Excel — the URL is never written out as text, only a short label inside the
+// copy is clickable (e.g. an "Image Link" line pointing to a Drive asset).
+// linkify() only catches URLs typed as text, so those embedded links were lost.
+// renderCopy() re-applies them: after the normal linkify pass it wraps the first
+// plain-text occurrence of each label with an <a>, using the exact label text
+// and exact target URL captured from the Excel source. Works for any record /
+// channel that has a `hyperlinks` array; nothing else about the copy changes.
+function renderCopy(str, hyperlinks) {
+  let html = linkify(str);
+  (hyperlinks || []).forEach(h => {
+    if (!h || !h.text || !h.url) return;
+    const needle = escapeHtml(h.text);
+    if (!needle) return;
+    let from = 0;
+    while (from <= html.length) {
+      const at = html.toLowerCase().indexOf(needle.toLowerCase(), from);
+      if (at === -1) break;
+      // skip matches that fall inside an <a>…</a> already produced by linkify
+      const before = html.slice(0, at);
+      if (before.lastIndexOf('<a ') > before.lastIndexOf('</a>')) { from = at + needle.length; continue; }
+      const matchedText = html.slice(at, at + needle.length);
+      const anchor = `<a href="${escapeHtml(h.url)}" target="_blank" rel="noopener noreferrer" class="copy-link">${matchedText}</a>`;
+      html = before + anchor + html.slice(at + needle.length);
+      break;
+    }
+  });
+  return html;
+}
+
+// Journey card subtitle: Session Type only (Use Case is already shown as the
+// step/group heading in Journey View, so repeating it per-card is redundant).
+function journeyCardSubtitle(rec) {
+  return rec.sessionTypeRaw ? escapeHtml(rec.sessionTypeRaw) : 'â';
+}
+
+function matchesSearch(rec, q) {
+  if (!q) return true;
+  const hay = [
+    rec.sessionTypeRaw, rec.useCaseRaw, rec.timingRaw, rec.phaseRaw,
+    rec.whatsapp.copy, rec.email.copy, rec.push.copy,
+    rec.whatsapp.templateId, rec.email.templateId, rec.push.templateId,
+    rec.whatsapp.platform, rec.email.platform, rec.push.platform,
+    rec.audience, rec.trigger, rec.owner, rec.notes, rec.status,
+  ].filter(Boolean).join(' \n ').toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+function matchesFilters(rec) {
+  const f = state.filters;
+  if (f.sessionType.size && !rec.sessionTypes.some(v => f.sessionType.has(v))) return false;
+  if (f.useCase.size && !rec.useCases.some(v => f.useCase.has(v))) return false;
+  if (f.timing.size && !rec.timings.some(v => f.timing.has(v))) return false;
+  if (f.channel.size && !rec.channelsUsed.some(v => f.channel.has(v))) return false;
+  if (f.phase.size && !f.phase.has(rec.phase || 'unspecified')) return false;
+  return true;
+}
+
+function getFilteredRecords() {
+  return RAW.filter(rec => {
+    if (state.channelScope && !rec.channelsUsed.includes(state.channelScope)) return false;
+    if (!matchesFilters(rec)) return false;
+    if (!matchesSearch(rec, state.search)) return false;
+    return true;
+  });
+}
+
+// ================= NAV =================
+document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => setView(btn.dataset.view));
+});
+
+function setView(view) {
+  state.view = view;
+  document.querySelectorAll('.nav-item[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+
+  const isLibraryLike = ['library', 'whatsapp', 'email', 'push'].includes(view);
+  document.getElementById('view-overview').classList.toggle('active', view === 'overview');
+  document.getElementById('view-library').classList.toggle('active', isLibraryLike);
+  document.getElementById('view-journey').classList.toggle('active', view === 'journey');
+  document.getElementById('view-templates').classList.toggle('active', view === 'templates');
+
+  if (isLibraryLike) {
+    state.channelScope = ['whatsapp', 'email', 'push'].includes(view) ? view : null;
+    const titles = {
+      library: ['Notification Library', 'Search and filter every tracked notification. Click a card to view the exact copy and template details.'],
+      whatsapp: ['WhatsApp Notifications', 'Every notification with active WhatsApp copy.'],
+      email: ['Email Notifications', 'Every notification with active Email copy.'],
+      push: ['Push Notifications', 'Every notification with active Push copy.'],
+    };
+    document.getElementById('library-title').textContent = titles[view][0];
+    document.getElementById('library-desc').textContent = titles[view][1];
+    renderLibrary();
+  }
+  if (view === 'overview') renderOverview();
+  if (view === 'journey') renderJourney();
+  if (view === 'templates') renderTemplates();
+
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+// ================= OVERVIEW =================
+function renderOverview() {
+  const total = RAW.length;
+  const complete = RAW.filter(r => !r.incomplete);
+  const waCount = RAW.filter(r => r.channelsUsed.includes('whatsapp')).length;
+  const emCount = RAW.filter(r => r.channelsUsed.includes('email')).length;
+  const puCount = RAW.filter(r => r.channelsUsed.includes('push')).length;
+  const useCaseCount = allUseCases().length;
+  const sessionTypeCount = allSessionTypes().length;
+  const incompleteCount = RAW.filter(r => r.incomplete).length;
+
+  const metrics = [
+    { label: 'Total notifications', value: total, cls: '' },
+    { label: 'WhatsApp notifications', value: waCount, cls: 'wa' },
+    { label: 'Email notifications', value: emCount, cls: 'em' },
+    { label: 'Push notifications', value: puCount, cls: 'pu' },
+    { label: 'Use cases', value: useCaseCount, cls: 'accent' },
+    { label: 'Session types', value: sessionTypeCount, cls: 'accent' },
+    { label: 'Incomplete records', value: incompleteCount, cls: '' },
+  ];
+
+  document.getElementById('metric-grid').innerHTML = metrics.map(m => `
+    <div class="metric-card ${m.cls}">
+      <div class="metric-value">${m.value}</div>
+      <div class="metric-label">${m.label}</div>
+    </div>
+  `).join('');
+
+  // breakdown by session type
+  const sessionCounts = {};
+  RAW.forEach(r => r.sessionTypes.forEach(s => { sessionCounts[s] = (sessionCounts[s] || 0) + 1; }));
+  const maxSession = Math.max(1, ...Object.values(sessionCounts));
+  document.getElementById('breakdown-session').innerHTML = Object.entries(sessionCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => `
+      <div class="breakdown-row">
+        <div class="name">${escapeHtml(name)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(count / maxSession) * 100}%"></div></div>
+        <div class="count">${count}</div>
+      </div>
+    `).join('');
+
+  // breakdown by use case
+  const useCaseCounts = {};
+  RAW.forEach(r => r.useCases.forEach(u => { useCaseCounts[u] = (useCaseCounts[u] || 0) + 1; }));
+  const maxUseCase = Math.max(1, ...Object.values(useCaseCounts));
+  document.getElementById('breakdown-usecase').innerHTML = Object.entries(useCaseCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => `
+      <div class="breakdown-row">
+        <div class="name">${escapeHtml(name)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(count / maxUseCase) * 100}%; background: var(--gold);"></div></div>
+        <div class="count">${count}</div>
+      </div>
+    `).join('');
+
+  document.getElementById('count-all').textContent = total;
+  document.getElementById('count-wa').textContent = waCount;
+  document.getElementById('count-em').textContent = emCount;
+  document.getElementById('count-pu').textContent = puCount;
+}
+
+// ================= FILTERS UI =================
+const FILTER_DEFS = [
+  { key: 'sessionType', label: 'Session Type', options: allSessionTypes },
+  { key: 'useCase', label: 'Use Case', options: allUseCases },
+  { key: 'timing', label: 'Timing', options: allTimings },
+  { key: 'channel', label: 'Channel', options: () => ['whatsapp', 'push'] },
+  { key: 'phase', label: 'Phase', options: () => ['pre', 'post'] },
+];
+
+function renderFilterBar() {
+  const row = document.getElementById('filters-row');
+  row.innerHTML = FILTER_DEFS.map(def => {
+    const opts = def.options();
+    return `
+      <div class="filter-group" data-key="${def.key}">
+        <button class="filter-btn" data-toggle="${def.key}">
+          ${def.label}
+          <span class="chip-count" style="display:none">0</span>
+        </button>
+        <div class="filter-panel" data-panel="${def.key}">
+          ${opts.map(o => `
+            <label class="filter-opt">
+              <input type="checkbox" value="${escapeHtml(o)}" data-filter="${def.key}">
+              <span>${escapeHtml(labelize(def.key, o))}</span>
+            </label>
+          `).join('')}
+          <button class="filter-clear-all" data-clear="${def.key}">Clear</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  row.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.toggle;
+      document.querySelectorAll('.filter-panel').forEach(p => {
+        if (p.dataset.panel !== key) p.classList.remove('open');
+      });
+      document.querySelector(`.filter-panel[data-panel="${key}"]`).classList.toggle('open');
+    });
+  });
+
+  row.querySelectorAll('input[data-filter]').forEach(input => {
+    input.addEventListener('change', () => {
+      const key = input.dataset.filter;
+      const set = state.filters[key];
+      if (input.checked) set.add(input.value); else set.delete(input.value);
+      syncFilterButtons();
+      renderLibrary();
+    });
+  });
+
+  row.querySelectorAll('[data-clear]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.clear;
+      state.filters[key].clear();
+      row.querySelectorAll(`input[data-filter="${key}"]`).forEach(i => i.checked = false);
+      syncFilterButtons();
+      renderLibrary();
+    });
+  });
+
+  if (!renderFilterBar._outsideClickBound) {
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.filter-panel').forEach(p => p.classList.remove('open'));
+    });
+    renderFilterBar._outsideClickBound = true;
+  }
+}
+
+function labelize(key, value) {
+  if (key === 'channel') {
+    return { whatsapp: 'WhatsApp', email: 'Email', push: 'Push' }[value] || value;
+  }
+  if (key === 'phase') {
+    return { pre: 'Pre-Session', post: 'Post-Session' }[value] || value;
+  }
+  return value;
+}
+
+function syncFilterButtons() {
+  FILTER_DEFS.forEach(def => {
+    const size = state.filters[def.key].size;
+    const btn = document.querySelector(`.filter-btn[data-toggle="${def.key}"]`);
+    const countEl = btn.querySelector('.chip-count');
+    btn.classList.toggle('has-selection', size > 0);
+    countEl.style.display = size > 0 ? 'inline-flex' : 'none';
+    countEl.textContent = size;
+  });
+
+  const parts = [];
+  FILTER_DEFS.forEach(def => {
+    const set = state.filters[def.key];
+    if (set.size) parts.push(`<strong>${def.label}:</strong> ${Array.from(set).map(v => labelize(def.key, v)).join(', ')}`);
+  });
+  document.getElementById('active-summary').innerHTML = parts.length ? parts.join('  Â·  ') : '';
+}
+
+// ================= LIBRARY =================
+function renderLibrary() {
+  const results = getFilteredRecords();
+  const grid = document.getElementById('card-grid');
+  document.getElementById('result-count').textContent = `${results.length} of ${RAW.length} notification${RAW.length === 1 ? '' : 's'}`;
+
+  if (!results.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="big">No notifications match</div>
+      Try clearing a filter or adjusting your search.
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = results.map(rec => cardHtml(rec)).join('');
+  grid.querySelectorAll('.notif-card').forEach(card => {
+    card.addEventListener('click', () => openDrawer(card.dataset.id));
+  });
+}
+
+function cardHtml(rec) {
+  const title = rec.useCaseRaw || 'Unspecified use case';
+  const session = rec.sessionTypeRaw || 'â';
+  const timing = rec.timingRaw || 'â';
+  return `
+    <div class="notif-card ${rec.incomplete ? 'incomplete' : ''}" data-id="${rec.id}">
+      <div class="notif-card-top">
+        <div class="notif-usecase">${escapeHtml(title)}</div>
+        <div class="notif-id">${rec.id}</div>
+      </div>
+      <div class="notif-meta">
+        <span class="pill pill-session">${escapeHtml(session)}</span>
+        <span class="pill pill-timing">${escapeHtml(timing)}</span>
+        ${rec.incomplete ? `<span class="pill pill-flag">Incomplete record</span>` : ''}
+      </div>
+      <div class="channel-row">
+        ${CHANNELS.map(c => `
+          <span class="chan-badge ${rec[c.key].used ? 'on ' + c.short : 'off'}">
+            <span class="chan-dot"></span>${c.label}
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ================= DRAWER =================
+const overlay = document.getElementById('overlay');
+const drawer = document.getElementById('drawer');
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+overlay.addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+function openDrawer(id) {
+  const rec = RAW.find(r => r.id === id);
+  if (!rec) return;
+
+  const rowRefs = [];
+  if (rec.sourceRowWhatsapp) rowRefs.push(`WhatsApp sheet row ${rec.sourceRowWhatsapp}`);
+  if (rec.sourceRowPush) rowRefs.push(`Push sheet row ${rec.sourceRowPush}`);
+  document.getElementById('drawer-eyebrow').textContent = `${rec.id} Â· ${rowRefs.join(' Â· ') || 'Source row unknown'}`;
+  document.getElementById('drawer-title').textContent = rec.useCaseRaw || 'Unspecified use case';
+
+  const metaFields = [
+    ['Session Type', rec.sessionTypeRaw],
+    ['Timing', rec.timingRaw],
+    ['Phase', rec.phaseRaw],
+    ['Audience', rec.audience],
+    ['Trigger', rec.trigger],
+    ['Status', rec.status],
+    ['Owner', rec.owner],
+    ['Last Updated', rec.lastUpdated],
+    ['Version', rec.version],
+  ];
+
+  const metaHtml = metaFields.map(([k, v]) => `
+    <div class="meta-item">
+      <div class="k">${k}</div>
+      <div class="v ${v ? '' : 'muted'}">${v ? escapeHtml(v) : 'Not available'}</div>
+    </div>
+  `).join('');
+
+  const flagHtml = rec.incomplete ? `
+    <div class="dataflag">â  This record is missing key fields in the source tracker (use case, session type, or all channel copy). Shown as-is rather than filled in.</div>
+  ` : '';
+
+  const channelBlocks = CHANNELS.map(c => {
+    const chanData = rec[c.key];
+    const tmplId = chanData.templateId;
+    const platform = chanData.platform;
+    const tmplLabel = tmplId
+      ? escapeHtml(tmplId) + (platform ? ` <span style="opacity:.6">Â· ${escapeHtml(platform)}</span>` : '')
+      : 'Template ID: Not available';
+    return `
+      <div class="channel-block ${c.short}">
+        <div class="channel-block-head">
+          <div class="chname">${c.label}</div>
+          <div class="tmpl-id">${tmplLabel}</div>
+        </div>
+        <div class="channel-block-body">
+          ${chanData.used
+            ? `<div class="copy-text" id="copy-${c.short}-${rec.id}">${renderCopy(chanData.copy, chanData.hyperlinks)}</div>
+               <button class="copy-btn" data-copy-target="copy-${c.short}-${rec.id}">
+                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                 Copy copy
+               </button>`
+            : `<div class="not-used-text">Not used for this notification.</div>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="meta-table">${metaHtml}</div>
+    ${flagHtml}
+    ${channelBlocks}
+    ${rec.notes ? `<div class="meta-item" style="margin-top:6px;"><div class="k">Notes</div><div class="v">${linkify(rec.notes)}</div></div>` : ''}
+  `;
+
+  document.getElementById('drawer-body').querySelectorAll('[data-copy-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const text = document.getElementById(btn.dataset.copyTarget).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        const original = btn.innerHTML;
+        btn.innerHTML = 'Copied â';
+        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = original; }, 1400);
+      });
+    });
+  });
+
+  overlay.classList.add('open');
+  drawer.classList.add('open');
+}
+
+function closeDrawer() {
+  overlay.classList.remove('open');
+  drawer.classList.remove('open');
+}
+
+// ================= JOURNEY =================
+// Phase (Pre-Session / Post-Session) now comes directly from the tracker's own
+// "Phase" column â no longer inferred. Records where the tracker leaves Phase
+// blank fall into "Unspecified Phase" rather than being guessed at.
+const PHASES = [
+  { key: 'pre', label: 'Pre-Session', sub: 'Registration through the run-up to session start', icon: iconClock() },
+  { key: 'post', label: 'Post-Session', sub: 'Recap, feedback, follow-up and upsell after the session ends', icon: iconCheck() },
+];
+
+function iconClock() { return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`; }
+function iconCheck() { return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>`; }
+
+// ---- Journey View multi-select filters ----
+// Every Journey filter is a multi-select dropdown with checkboxes + Select all /
+// Clear all. Multiple values per filter and multiple filters combine (AND across
+// filters, OR within a filter). Design language is shared with the Library
+// filters (.filter-btn / .filter-panel / .filter-opt).
+const JOURNEY_FILTER_DEFS = [
+  { key: 'sessionType', label: 'Session Type', options: () => allSessionTypes(),
+    match: (rec, set) => rec.sessionTypes.some(v => set.has(v)) },
+  { key: 'useCase', label: 'Use Case', options: () => allUseCases(),
+    match: (rec, set) => rec.useCases.some(v => set.has(v)) },
+  { key: 'phase', label: 'Session Stage', options: () => ['pre', 'post', 'unspecified'],
+    match: (rec, set) => set.has(rec.phase || 'unspecified') },
+  { key: 'channel', label: 'Channel', options: () => ['whatsapp', 'push'],
+    match: (rec, set) => rec.channelsUsed.some(v => set.has(v)) },
+  { key: 'status', label: 'Status', options: () => uniqueSorted(RAW.map(r => r.status)),
+    match: (rec, set) => set.has(rec.status) },
+];
+
+const journeyFilterState = {};
+JOURNEY_FILTER_DEFS.forEach(d => { journeyFilterState[d.key] = new Set(); });
+
+function journeyLabelize(key, value) {
+  if (key === 'channel') return { whatsapp: 'WhatsApp', email: 'Email', push: 'Push' }[value] || value;
+  if (key === 'phase') return { pre: 'Pre-Session', post: 'Post-Session', unspecified: 'Phase Not Specified' }[value] || value;
+  return value;
+}
+
+function matchesJourneyFilters(rec) {
+  return JOURNEY_FILTER_DEFS.every(def => {
+    const set = journeyFilterState[def.key];
+    return set.size ? def.match(rec, set) : true;
+  });
+}
+
+// Button text: nothing selected -> the filter's name; one -> that value;
+// many -> "First, Second +N" (N = remaining count).
+function journeyFilterButtonText(def) {
+  const set = journeyFilterState[def.key];
+  if (!set.size) return def.label;
+  const vals = Array.from(set).map(v => journeyLabelize(def.key, v));
+  if (vals.length === 1) return vals[0];
+  return `${vals[0]}, ${vals[1]}${vals.length > 2 ? ` +${vals.length - 2}` : ''}`;
+}
+
+let journeyFilterBarBuilt = false;
+function ensureJourneyFilterBar() {
+  if (journeyFilterBarBuilt) return;
+  const row = document.getElementById('journey-filters-row');
+
+  row.innerHTML = JOURNEY_FILTER_DEFS.map(def => {
+    const opts = def.options();
+    return `
+      <div class="filter-group" data-jkey="${def.key}">
+        <button class="filter-btn jfilter-btn" data-jtoggle="${def.key}" ${opts.length ? '' : 'disabled'}>
+          <span class="jf-text">${escapeHtml(def.label)}</span>
+        </button>
+        <div class="filter-panel" data-jpanel="${def.key}">
+          ${opts.length ? `
+            <div class="filter-panel-actions">
+              <button class="filter-mini" data-jselectall="${def.key}">Select all</button>
+              <button class="filter-mini" data-jclearall="${def.key}">Clear all</button>
+            </div>
+            ${opts.map(o => `
+              <label class="filter-opt">
+                <input type="checkbox" value="${escapeHtml(o)}" data-jfilter="${def.key}">
+                <span>${escapeHtml(journeyLabelize(def.key, o))}</span>
+              </label>
+            `).join('')}
+          ` : `<div class="filter-empty">Not tracked in this sheet yet</div>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Toggle a panel open (and close any other open panel)
+  row.querySelectorAll('[data-jtoggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = btn.closest('.filter-group').querySelector('.filter-panel');
+      const isOpen = panel.classList.contains('open');
+      document.querySelectorAll('.filter-panel').forEach(p => p.classList.remove('open'));
+      if (!isOpen) panel.classList.add('open');
+    });
+  });
+
+  // Keep the panel open while ticking checkboxes / hitting the mini buttons
+  row.querySelectorAll('.filter-panel').forEach(panel => {
+    panel.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  row.querySelectorAll('input[data-jfilter]').forEach(input => {
+    input.addEventListener('change', () => {
+      const set = journeyFilterState[input.dataset.jfilter];
+      if (input.checked) set.add(input.value); else set.delete(input.value);
+      syncJourneyFilterButtons();
+      renderJourney();
+    });
+  });
+
+  row.querySelectorAll('[data-jselectall]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.jselectall;
+      const set = journeyFilterState[key];
+      set.clear();
+      row.querySelectorAll(`input[data-jfilter="${key}"]`).forEach(i => { i.checked = true; set.add(i.value); });
+      syncJourneyFilterButtons();
+      renderJourney();
+    });
+  });
+
+  row.querySelectorAll('[data-jclearall]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.jclearall;
+      journeyFilterState[key].clear();
+      row.querySelectorAll(`input[data-jfilter="${key}"]`).forEach(i => { i.checked = false; });
+      syncJourneyFilterButtons();
+      renderJourney();
+    });
+  });
+
+  journeyFilterBarBuilt = true;
+  syncJourneyFilterButtons();
+}
+
+function syncJourneyFilterButtons() {
+  JOURNEY_FILTER_DEFS.forEach(def => {
+    const btn = document.querySelector(`.jfilter-btn[data-jtoggle="${def.key}"]`);
+    if (!btn) return;
+    const set = journeyFilterState[def.key];
+    btn.classList.toggle('has-selection', set.size > 0);
+    btn.querySelector('.jf-text').textContent = journeyFilterButtonText(def);
+    btn.title = set.size ? Array.from(set).map(v => journeyLabelize(def.key, v)).join(', ') : def.label;
+  });
+}
+
+function getSortKey(rec) {
+  const isImmediate = (rec.timingRaw || '').toLowerCase().includes('immediate');
+  if (isImmediate) return -1e9; // earliest step within whichever phase it belongs to
+  if (rec.timingSortKey === null || rec.timingSortKey === undefined) return 1e9; // no timing â sort last within its phase
+  return rec.timingSortKey;
+}
+
+function classifyPhase(rec) {
+  const phase = rec.phase || 'unspecified'; // 'pre' | 'post' | 'unspecified' (Phase column blank in tracker)
+  return { phase, sortKey: getSortKey(rec) };
+}
+
+function renderJourney() {
+  ensureJourneyFilterBar();
+
+  const records = RAW.filter(r => !r.incomplete).filter(matchesJourneyFilters);
+
+  const container = document.getElementById('journey-phases');
+  if (!records.length) {
+    container.innerHTML = `<div class="empty-state"><div class="big">No notifications in this journey</div>Try a different combination of filters.</div>`;
+    return;
+  }
+
+  // bucket records into phases
+  const buckets = { pre: [], post: [], unspecified: [] };
+  records.forEach(rec => {
+    const { phase, sortKey } = classifyPhase(rec);
+    buckets[phase].push({ rec, sortKey });
+  });
+
+  let html = '';
+
+  PHASES.forEach(phaseDef => {
+    const items = buckets[phaseDef.key];
+    if (!items.length) return;
+
+    // group by raw timing label within this phase, ordered by sortKey
+    const groups = {};
+    items.forEach(({ rec, sortKey }) => {
+      const label = rec.timingRaw || 'Timing not specified';
+      if (!groups[label]) groups[label] = { sortKey, items: [] };
+      groups[label].items.push(rec);
+    });
+    const orderedGroups = Object.entries(groups).sort((a, b) => a[1].sortKey - b[1].sortKey);
+
+    html += `
+      <div class="phase-block phase-${phaseDef.key}">
+        <div class="phase-head">
+          <div class="phase-icon">${phaseDef.icon}</div>
+          <div class="phase-titles">
+            <div class="phase-name">${phaseDef.label}</div>
+            <div class="phase-sub">${phaseDef.sub}</div>
+          </div>
+          <div class="phase-count">${items.length} notification${items.length === 1 ? '' : 's'}</div>
+        </div>
+        <div class="journey-track">
+          ${orderedGroups.map(([label, group]) => `
+            <div class="journey-step">
+              <div class="journey-step-label">${escapeHtml(label)}</div>
+              <div class="journey-cards">
+                ${group.items.map(rec => `
+                  <div class="journey-card" data-id="${rec.id}">
+                    <div>
+                      <div class="jc-title">${escapeHtml(rec.useCaseRaw || 'Unspecified use case')}</div>
+                      <div class="jc-sub">${journeyCardSubtitle(rec)}</div>
+                    </div>
+                    <div class="channel-row">
+                      ${CHANNELS.map(c => `<span class="chan-badge ${rec[c.key].used ? 'on ' + c.short : 'off'}"><span class="chan-dot"></span>${c.label}</span>`).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  // Unspecified phase â the tracker's Phase column was left blank for these rows
+  if (buckets.unspecified.length) {
+    const groups = {};
+    buckets.unspecified.forEach(({ rec, sortKey }) => {
+      const label = rec.timingRaw || 'Timing not specified';
+      if (!groups[label]) groups[label] = { sortKey, items: [] };
+      groups[label].items.push(rec);
+    });
+    const orderedGroups = Object.entries(groups).sort((a, b) => a[1].sortKey - b[1].sortKey);
+
+    html += `
+      <div class="phase-block phase-unspecified">
+        <div class="phase-head">
+          <div class="phase-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 12v4"/></svg></div>
+          <div class="phase-titles">
+            <div class="phase-name">Phase Not Specified</div>
+            <div class="phase-sub">The tracker's Phase column is blank for these rows â not placed in Pre or Post-Session</div>
+          </div>
+          <div class="phase-count">${buckets.unspecified.length} notification${buckets.unspecified.length === 1 ? '' : 's'}</div>
+        </div>
+        <div class="journey-track">
+          ${orderedGroups.map(([label, group]) => `
+            <div class="journey-step">
+              <div class="journey-step-label">${escapeHtml(label)}</div>
+              <div class="journey-cards">
+                ${group.items.map(rec => `
+                  <div class="journey-card" data-id="${rec.id}">
+                    <div>
+                      <div class="jc-title">${escapeHtml(rec.useCaseRaw || 'Unspecified use case')}</div>
+                      <div class="jc-sub">${journeyCardSubtitle(rec)}</div>
+                    </div>
+                    <div class="channel-row">
+                      ${CHANNELS.map(c => `<span class="chan-badge ${rec[c.key].used ? 'on ' + c.short : 'off'}"><span class="chan-dot"></span>${c.label}</span>`).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  container.querySelectorAll('.journey-card').forEach(card => {
+    card.addEventListener('click', () => openDrawer(card.dataset.id));
+  });
+}
+
+// ================= TEMPLATES =================
+function renderTemplates(query) {
+  const tbody = document.getElementById('tmpl-tbody');
+  const q = (query || '').toLowerCase();
+  const rows = RAW.filter(rec => {
+    if (!q) return true;
+    const hay = [
+      rec.useCaseRaw, rec.sessionTypeRaw,
+      rec.whatsapp.templateId, rec.email.templateId, rec.push.templateId,
+      rec.whatsapp.platform, rec.email.platform, rec.push.platform,
+    ].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">No matching templates</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(rec => `
+    <tr data-id="${rec.id}">
+      <td>${escapeHtml(rec.useCaseRaw || 'Unspecified use case')}</td>
+      <td>${escapeHtml(rec.sessionTypeRaw || 'â')}</td>
+      <td class="tmpl-id-cell ${rec.whatsapp.templateId ? '' : 'na'}">${rec.whatsapp.templateId ? escapeHtml(rec.whatsapp.templateId) : 'Not available'}</td>
+      <td class="tmpl-id-cell ${rec.email.templateId ? '' : 'na'}">${rec.email.templateId ? escapeHtml(rec.email.templateId) : 'Not available'}</td>
+      <td class="tmpl-id-cell ${rec.push.templateId ? '' : 'na'}">${rec.push.templateId ? escapeHtml(rec.push.templateId) : 'Not available'}</td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.addEventListener('click', () => openDrawer(tr.dataset.id));
+  });
+}
+
+document.getElementById('tmpl-search-input').addEventListener('input', (e) => renderTemplates(e.target.value));
+
+// ================= SEARCH =================
+const searchInput = document.getElementById('search-input');
+const searchClear = document.getElementById('search-clear');
+searchInput.addEventListener('input', () => {
+  state.search = searchInput.value;
+  searchClear.style.display = state.search ? 'flex' : 'none';
+  renderLibrary();
+});
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  state.search = '';
+  searchClear.style.display = 'none';
+  renderLibrary();
+});
+
+// ================= LIVE SHEET LOADING =================
+// Match columns by header text (with a fixed-position fallback) so the sheet's
+// columns can be renamed or reordered without breaking the dashboard.
+function buildColMap(headerRow, channelKey) {
+  const norm = s => String(s == null ? '' : s).trim().toLowerCase();
+  const find = (re, fallbackIdx) => {
+    const i = headerRow.findIndex(h => re.test(norm(h)));
+    return i === -1 ? fallbackIdx : i;
+  };
+  return {
+    sessionType: find(/session\s*type/, 0),
+    useCase:     find(/use\s*case/, 1),
+    timing:      find(/timing/, 2),
+    phase:       find(/phase/, 3),
+    copy:        find(channelKey === 'push' ? /push/ : /whats?app/, 4),
+    templateId:  find(/template\s*id/, 5),
+    platform:    find(/platform/, 6),
+  };
+}
+
+// gviz cells are `{v: value}` (value may be null) or null for an empty cell.
+function cellText(cell) { return (!cell || cell.v == null) ? '' : String(cell.v); }
+function cleanScalar(cell) { const t = cellText(cell).trim(); return t === '' ? null : t; }
+function rowHasContent(cells) {
+  return (cells || []).some(c => c && c.v != null && String(c.v).trim() !== '');
+}
+
+// Embedded Drive / asset hyperlinks from the source sheet that the gviz API strips out.
+// Keyed by row and content keywords to stay robust against future row inserts or reordering.
+const KNOWN_EMBEDDED_HYPERLINKS = [
+  {
+    // Row 11: Energy Exchange (WhatsApp)
+    matches: (rowNum, copy) => rowNum === 11 || (copy && /positive shift|wonderful session|Energy Exchange/i.test(copy)),
+    hyperlinks: [{ text: 'Image Link', url: 'https://drive.google.com/file/d/1D_3ZfWyeFZPkf_MNyJ9nxKAe-lxICCr6/view?usp=drive_link' }]
+  },
+  {
+    // Row 12: Subscription (WhatsApp)
+    matches: (rowNum, copy) => rowNum === 12 || (copy && /SoulSensei Membership free trial|250\+/i.test(copy)),
+    hyperlinks: [{ text: 'Image Link', url: 'https://drive.google.com/file/d/1kDG-5mKUR4-t0upg1a94dvM83ty7N4d1/view?usp=drive_link' }]
+  },
+  {
+    // Row 16: Digital Goods Recording (WhatsApp)
+    matches: (rowNum, copy) => rowNum === 16 || (copy && /booking this exclusive resource|12-RT3R3rj/i.test(copy)),
+    hyperlinks: [{ text: 'Imagelink', url: 'https://drive.google.com/file/d/1FyIAkLqE5Tebd2b4G3Dt2oVh75ESYI5r/view?usp=drive_link' }]
+  },
+  {
+    // Row 27: Upsell bundle (WhatsApp)
+    matches: (rowNum, copy) => rowNum === 27 || (copy && /3-Session Bundle|Bundel/i.test(copy)),
+    hyperlinks: [{ text: 'Image Link', url: 'https://drive.google.com/file/d/1mSuLlB0b5VMlv_nJod5aTIwOGzZylyYP/view?usp=drive_link' }]
+  }
+];
+
+function resolveHyperlinks(rowNum, copy) {
+  if (!copy) return [];
+  for (const item of KNOWN_EMBEDDED_HYPERLINKS) {
+    if (item.matches(rowNum, copy)) {
+      return item.hyperlinks;
+    }
+  }
+  return [];
+}
+
+// Turn one message cell + its Template ID / Platform cells into a channel object.
+// "used" is false when the cell is blank or literally "NA" / "N/A".
+const NA_RE = /^n\/?a$/i;
+function channelData(copyCell, tmplCell, platCell, rowNum) {
+  const raw = cellText(copyCell);
+  const trimmed = raw.trim();
+  const used = trimmed !== '' && !NA_RE.test(trimmed);
+  return {
+    used,
+    copy: used ? raw : null,
+    templateId: cellText(tmplCell).trim() !== '' ? cellText(tmplCell) : null,
+    platform: cleanScalar(platCell),
+    hyperlinks: used ? resolveHyperlinks(rowNum, raw) : [],
+  };
+}
+function emptyChannel() {
+  return { used: false, copy: null, templateId: null, platform: null, hyperlinks: [] };
+}
+
+function splitList(raw) {
+  return String(raw || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// Convert a Timing label to minutes relative to session start (T). Negative =
+// before, positive = after, 0 = Immediate, null = no parseable timing.
+function parseTimingSortKey(timingRaw) {
+  if (!timingRaw) return null;
+  let key = null;
+  String(timingRaw).split(',').forEach(tok => {
+    if (/immediate/i.test(tok)) { key = 0; return; }
+    const m = tok.match(/t\s*([+-])\s*(\d+(?:\.\d+)?)\s*(day|hour|hr|min)/i);
+    if (m) {
+      const sign = m[1] === '-' ? -1 : 1;
+      const unit = m[3].toLowerCase();
+      const mult = unit.charAt(0) === 'd' ? 1440 : (unit.charAt(0) === 'h' ? 60 : 1);
+      key = sign * parseFloat(m[2]) * mult;
+    }
+  });
+  return key;
+}
+
+function normalizePhase(phaseRaw) {
+  if (!phaseRaw) return null;
+  const p = phaseRaw.toLowerCase();
+  if (p.includes('pre')) return 'pre';
+  if (p.includes('post')) return 'post';
+  return null;
+}
+
+// Merge the Whatsapp and Push tabs row-by-row into the record shape every render
+// function expects. Row N of Whatsapp + row N of Push -> one record. `wa`/`pu`
+// are { header: [labels], rows: [[cell,...],...] } (pu may be null).
+function transformTables(wa, pu) {
+  const waCols = buildColMap(wa.header, 'whatsapp');
+  const puCols = pu ? buildColMap(pu.header, 'push') : null;
+  const puRows = pu ? pu.rows : [];
+
+  const records = [];
+  let seq = 0;
+  for (let i = 0; i < wa.rows.length; i++) {
+    const row = wa.rows[i];
+    const rowNum = i + 2; // header row consumed by headers=1 -> first data row is sheet row 2
+
+    const sessionTypeRaw = cleanScalar(row[waCols.sessionType]);
+    const useCaseRaw = cleanScalar(row[waCols.useCase]);
+    const timingRaw = cleanScalar(row[waCols.timing]);
+    const phaseRaw = cleanScalar(row[waCols.phase]);
+    const whatsapp = channelData(row[waCols.copy], row[waCols.templateId], row[waCols.platform], rowNum);
+
+    // Skip a row that is entirely blank across every column we read.
+    if (!sessionTypeRaw && !useCaseRaw && !timingRaw && !phaseRaw && !whatsapp.used) continue;
+    seq++;
+
+    const puRow = puRows[i] || null;
+    const push = (puRow && puCols)
+      ? channelData(puRow[puCols.copy], puRow[puCols.templateId], puRow[puCols.platform], rowNum)
+      : emptyChannel();
+    const email = emptyChannel();
+
+    const channels = { whatsapp, email, push };
+    const channelsUsed = ['whatsapp', 'email', 'push'].filter(k => channels[k].used);
+
+    records.push({
+      id: 'REC-' + String(seq).padStart(3, '0'),
+      sourceRowWhatsapp: rowNum,
+      sourceRowPush: rowHasContent(puRow) ? rowNum : null,
+      sessionTypeRaw, useCaseRaw, timingRaw,
+      sessionTypes: splitList(sessionTypeRaw),
+      useCases: splitList(useCaseRaw),
+      timings: splitList(timingRaw),
+      timingSortKey: parseTimingSortKey(timingRaw),
+      phaseRaw,
+      phase: normalizePhase(phaseRaw),
+      channelsUsed,
+      whatsapp, push, email,
+      incomplete: !sessionTypeRaw || !useCaseRaw,
+      audience: null, trigger: null, status: null, owner: null,
+      lastUpdated: null, version: null, notes: null,
+    });
+  }
+  return records;
+}
+
+// Load one sheet tab via gviz JSONP (a <script> tag, so no CORS / no server).
+function loadTab(key) {
+  return new Promise((resolve, reject) => {
+    const tab = SHEET_TABS[key];
+    const cb = '__gviz_' + key + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timed out reading the "' + tab + '" tab')); }, 20000);
+    function cleanup() { clearTimeout(timer); try { delete window[cb]; } catch (e) { window[cb] = undefined; } script.remove(); }
+    window[cb] = resp => {
+      cleanup();
+      if (!resp || resp.status === 'error' || !resp.table) {
+        reject(new Error('the "' + tab + '" tab could not be read')); return;
+      }
+      resolve({
+        header: (resp.table.cols || []).map(c => (c && c.label != null) ? c.label : ''),
+        rows: (resp.table.rows || []).map(r => (r && r.c) || []),
+      });
+    };
+    script.onerror = () => { cleanup(); reject(new Error('could not reach the sheet — check it is shared as “Anyone with the link”')); };
+    script.src = gvizUrl(tab, cb);
+    document.head.appendChild(script);
+  });
+}
+
+async function fetchRecords() {
+  const [wa, pu] = await Promise.all([
+    loadTab('whatsapp'),
+    loadTab('push').catch(() => null), // Push tab is optional
+  ]);
+  const records = transformTables(wa, pu);
+  if (!records.length) throw new Error('no notification rows found in the sheet');
+  return records;
+}
+
+// ================= SYNC STATUS BAR + REFRESH ENGINE =================
+const SYNC = { lastOk: null, inFlight: false, hash: '', pollMs: 60000, timer: null };
+
+function ensureSyncBar() {
+  if (document.getElementById('sync-bar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'sync-bar';
+  bar.innerHTML = '<span id="sync-dot"></span>'
+    + '<span id="sync-text">Connecting to Google Sheet…</span>'
+    + '<button id="sync-refresh" type="button">Refresh Data</button>';
+  document.body.appendChild(bar);
+  document.getElementById('sync-refresh').addEventListener('click', () => syncNow(true));
+}
+
+function setSyncState(kind, text) {
+  ensureSyncBar();
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  const btn = document.getElementById('sync-refresh');
+  const colors = { ok: 'var(--wa)', syncing: 'var(--gold)', error: 'var(--danger)' };
+  dot.style.background = colors[kind] || 'var(--line-strong)';
+  dot.classList.toggle('pulsing', kind === 'syncing');
+  if (text != null) txt.textContent = text;
+  btn.disabled = kind === 'syncing';
+  btn.textContent = kind === 'syncing' ? 'Refreshing…' : 'Refresh Data';
+}
+
+function fmtTime(d) {
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+
+// Re-tick the filter checkboxes from state (renderFilterBar rebuilds them blank).
+function restoreFilterChecks() {
+  document.querySelectorAll('#filters-row input[data-filter]').forEach(input => {
+    input.checked = state.filters[input.dataset.filter].has(input.value);
+  });
+}
+
+// Re-render whatever is on screen after new data arrives, keeping the user's
+// filters, search text, scroll position and any open drawer intact.
+function rerenderCurrentView() {
+  const openId = drawer.classList.contains('open')
+    ? (document.getElementById('drawer-eyebrow').textContent.trim().split(/\s+/)[0] || '')
+    : null;
+  const scrollY = window.scrollY;
+
+  renderFilterBar();
+  restoreFilterChecks();
+  syncFilterButtons();
+  renderOverview(); // also refreshes the sidebar nav counts
+
+  if (state.view === 'journey') { journeyFilterBarBuilt = false; renderJourney(); }
+  else if (state.view === 'templates') {
+    const q = document.getElementById('tmpl-search-input');
+    renderTemplates(q ? q.value : '');
+  } else if (state.view !== 'overview') {
+    renderLibrary();
+  }
+
+  if (openId && RAW.some(r => r.id === openId)) openDrawer(openId);
+  else if (openId) closeDrawer(); // the open record no longer exists in the sheet
+
+  window.scrollTo(0, scrollY);
+
+  const foot = document.querySelector('.sidebar-foot');
+  if (foot) {
+    foot.innerHTML = 'Source: live Google Sheet — “All notification Tracker - v1”<br>'
+      + 'Whatsapp + Push sheets · ' + RAW.length + ' notifications mapped';
+  }
+}
+
+async function syncNow(manual) {
+  if (SYNC.inFlight) return;
+  SYNC.inFlight = true;
+  setSyncState('syncing', manual ? 'Refreshing from Google Sheet…' : null);
+  try {
+    const records = await fetchRecords();
+    const hash = JSON.stringify(records);
+    const changed = hash !== SYNC.hash;
+    SYNC.hash = hash;
+
+    RAW.length = 0;
+    records.forEach(r => RAW.push(r));
+    if (changed) rerenderCurrentView(); // silent no-op when nothing changed
+
+    SYNC.lastOk = new Date();
+    setSyncState('ok', 'Last synced ' + fmtTime(SYNC.lastOk) + ' · ' + RAW.length + ' records'
+      + (changed ? ' · updated' : ''));
+  } catch (err) {
+    console.error('[Notification Command Center] sync failed:', err);
+    setSyncState('error', SYNC.lastOk
+      ? 'Sync failed ' + fmtTime(new Date()) + ' — still showing ' + fmtTime(SYNC.lastOk) + ' data'
+      : 'Could not load the Google Sheet — ' + err.message + ' (is it shared publicly?)');
+  } finally {
+    SYNC.inFlight = false;
+  }
+}
+
+// ================= INIT =================
+ensureSyncBar();
+syncNow(true);
+
+// Auto-poll so Sheet edits show up without touching the page (silent unless the
+// data actually changed), and refresh the moment the tab is brought back into view.
+SYNC.timer = setInterval(() => { if (!document.hidden) syncNow(false); }, SYNC.pollMs);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && SYNC.lastOk && Date.now() - SYNC.lastOk.getTime() > 15000) syncNow(false);
+});
+
+</script>
+
+</body>
+</html>
